@@ -1,4 +1,5 @@
 """The Infinitude integration."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -6,7 +7,7 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -18,6 +19,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import DOMAIN
 from .infinitude.api import Infinitude
+from .infinitude.const import HeatSource
 
 PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.SENSOR, Platform.BINARY_SENSOR]
 
@@ -25,6 +27,8 @@ _LOGGER = logging.getLogger(__name__)
 
 UPDATE_INTERVAL = 15
 UPDATE_TIMEOUT = 30
+
+SERVICE_SET_HEAT_SOURCE = "set_heat_source"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -44,6 +48,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    async def async_set_heat_source(call: ServiceCall):
+        """Set new heat source."""
+        heat_source = call.data.get("source")
+
+        _LOGGER.debug("Set heat source: %s", heat_source)
+
+        if heat_source in HeatSource:
+            await coordinator.infinitude.system.set_heat_source(
+                HeatSource(heat_source)
+            )
+        else:
+            _LOGGER.error("Invalid heat source: %s", heat_source)
+
+    hass.services.async_register(DOMAIN, SERVICE_SET_HEAT_SOURCE, async_set_heat_source)
+
     return True
 
 

@@ -19,6 +19,7 @@ from .const import (
     HVACMode,
     Occupancy,
     TemperatureUnit,
+    HeatSource,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -479,6 +480,63 @@ class InfinitudeSystem:
             else:
                 return 0
         return None
+
+    @property
+    def idu_operating_mode(self) -> str | None:
+        """Indoor unit operating status.
+
+        For multi-stage idu w/o %
+        """
+        idu = self._status.get("idu")
+        if not idu:
+            return None
+        if idu.get("type") == "furnace2stg":
+            idu_opstat = idu.get("opstat")
+            if not idu_opstat:
+                return 0
+            else:
+                return idu_opstat
+        return None
+
+    @property
+    def odu_modulation(self) -> int | None:
+        """Outdoor unit modulation percentage.
+
+        Only get modulating percentage if ODU type contains hp
+        """
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        if "hp" in odu.get("type"):
+            odu_opstat = odu.get("opstat").replace("Stage ", "")
+
+            if odu_opstat.isnumeric():
+                return int(odu_opstat)
+            else:
+                return 0
+        return None
+
+    @property
+    def heat_source(self) -> str | None:
+        """Heatsource setting"""
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        if "hp" in odu.get("type"):
+            heat_source = self._config["heatsource"]
+            if not heat_source:
+                return None
+            else:
+                return heat_source
+        return None
+
+    async def set_heat_source(self, heat_source: HeatSource) -> None:
+        """Set the heat source (auto, idu, odu)."""
+
+        endpoint = "/api/config"
+        data = {"heatsource": f"{heat_source.value}"}
+        await self._infinitude._post(endpoint, data)
+        await self._infinitude.update()
 
     @property
     def energy(self) -> dict | None:

@@ -33,6 +33,7 @@ from .infinitude.const import (
     HVACAction as InfHVACAction,
     HVACMode as InfHVACMode,
     TemperatureUnit as InfTemperatureUnit,
+    HeatSource as InfHeatSource,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,7 +42,9 @@ _LOGGER = logging.getLogger(__name__)
 ATTR_HOLD_ACTIVITY = "activity"
 ATTR_HOLD_MODE = "mode"
 ATTR_HOLD_UNTIL = "until"
+ATTR_SOURCE_MODE = "source"
 SERVICE_SET_HOLD_MODE = "set_hold_mode"
+SERVICE_SET_HEAT_SOURCE = "set_heat_source"
 
 
 async def async_setup_entry(

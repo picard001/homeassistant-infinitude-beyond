@@ -32,3 +32,17 @@ set_hold_mode:
             - "manual"
       description: "Name of the activity profile to hold with.  If not provided, defaults to the current activity."
       example: "'home', 'away', 'sleep', 'wake', 'manual'"
+set_heat_source:
+  description: Set the heat source the HVAC system will use (available for heat pump only)
+  fields:
+    source:
+      description: "Set which heat source to use"
+      required: true
+      example: "'system' = system in control; 'odu only' = heat pump only; 'idu only' = gas/resistive only"
+      default: "system"
+      selector:
+        select:
+          options:
+            - "system"
+            - "odu only"
+            - "idu only"

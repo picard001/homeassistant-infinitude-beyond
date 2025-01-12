@@ -85,3 +85,10 @@ class HumidifierState(Enum):
 
     ON = "on"
     OFF = "off"
+
+class HeatSource(Enum):
+    """Heat source reported by Infinitude (heat source)."""
+
+    HEAT_SOURCE_AUTO = "system"
+    HEAT_SOURCE_HP = "odu only"
+    HEAT_SOURCE_AUX = "idu only"
